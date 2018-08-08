@@ -136,6 +136,19 @@ if IDAPYTHON_COMPAT_AUTOIMPORT_MODULES:
     from idautils import *
     import idaapi
 
+# Load plugins installed by setuptools entry points intead of directory location
+from pkg_resources import iter_entry_points
+for ep in iter_entry_points(group="idapython.pluginmanager.v1"):
+    try:
+        print("Attmepting to load registered module: {}".format(ep.name))
+        module = ep.load()
+        path = module.__path__
+        from ida_loader import load_plugin
+        load_plugin(path)
+    except Exception:
+        print("Failed loading module: {}".format(traceback.format_exc()))
+
+
 # Load the users personal init file
 userrc = os.path.join(ida_diskio.get_user_idadir(), "idapythonrc.py")
 if os.path.exists(userrc):
